@@ -53,19 +53,7 @@ class Event {
   /// Indicates if this event counts as busy time, tentative, unavaiable or is still free time
   Availability availability;
 
-  Event(this.calendarId,
-      {this.eventId,
-      this.title,
-      this.start,
-      this.end,
-      this.startTimeZone,
-      this.endTimeZone,
-      this.description,
-      this.attendees,
-      this.recurrenceRule,
-      this.reminders,
-      this.availability,
-      this.allDay = false});
+  Event(this.calendarId, {this.eventId, this.title, this.start, this.end, this.startTimeZone, this.endTimeZone, this.description, this.attendees, this.recurrenceRule, this.reminders, this.availability, this.allDay = false});
 
   Event.fromJson(Map<String, dynamic> json) {
     if (json == null) {
@@ -109,11 +97,7 @@ class Event {
       // Getting and setting an organiser for iOS
       var organiser = Attendee.fromJson(json['organizer']);
 
-      var attendee = attendees.firstWhere(
-          (at) =>
-              at.name == organiser.name &&
-              at.emailAddress == organiser.emailAddress,
-          orElse: () => null);
+      var attendee = attendees.firstWhere((at) => at.name == organiser.name && at.emailAddress == organiser.emailAddress, orElse: () => null);
       if (attendee != null) {
         attendee.isOrganiser = true;
       }
@@ -154,7 +138,7 @@ class Event {
     return data;
   }
 
-  Availability parseStringToAvailability(String value) {
+  static Availability parseStringToAvailability(String value) {
     switch (value) {
       case 'BUSY':
         return Availability.Busy;
