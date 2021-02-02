@@ -16,8 +16,7 @@ import 'models/retrieve_events_params.dart';
 
 /// Provides functionality for working with device calendar(s)
 class DeviceCalendarPlugin {
-  static const MethodChannel channel =
-      MethodChannel(ChannelConstants.channelName);
+  static const MethodChannel channel = MethodChannel(ChannelConstants.channelName);
 
   static final DeviceCalendarPlugin _instance = DeviceCalendarPlugin.private();
 
@@ -86,28 +85,20 @@ class DeviceCalendarPlugin {
         _assertParameter(
           result,
           !((retrieveEventsParams?.eventIds?.isEmpty ?? true) &&
-              ((retrieveEventsParams?.startDate == null ||
-                      retrieveEventsParams?.endDate == null) ||
-                  (retrieveEventsParams.startDate != null &&
-                      retrieveEventsParams.endDate != null &&
-                      retrieveEventsParams.startDate
-                          .isAfter(retrieveEventsParams.endDate)))),
+              ((retrieveEventsParams?.startDate == null || retrieveEventsParams?.endDate == null) ||
+                  (retrieveEventsParams.startDate != null && retrieveEventsParams.endDate != null && retrieveEventsParams.startDate.isAfter(retrieveEventsParams.endDate)))),
           ErrorCodes.invalidArguments,
           ErrorMessages.invalidRetrieveEventsParams,
         );
       },
       arguments: () => <String, Object>{
         ChannelConstants.parameterNameCalendarId: calendarId,
-        ChannelConstants.parameterNameStartDate:
-            retrieveEventsParams.startDate?.millisecondsSinceEpoch,
-        ChannelConstants.parameterNameEndDate:
-            retrieveEventsParams.endDate?.millisecondsSinceEpoch,
+        ChannelConstants.parameterNameStartDate: retrieveEventsParams.startDate?.millisecondsSinceEpoch,
+        ChannelConstants.parameterNameEndDate: retrieveEventsParams.endDate?.millisecondsSinceEpoch,
         ChannelConstants.parameterNameEventIds: retrieveEventsParams.eventIds,
       },
       evaluateResponse: (rawData) => UnmodifiableListView(
-        json
-            .decode(rawData)
-            .map<Event>((decodedEvent) => Event.fromJson(decodedEvent)),
+        json.decode(rawData).map<Event>((decodedEvent) => Event.fromJson(decodedEvent)),
       ),
     );
   }
@@ -182,8 +173,7 @@ class DeviceCalendarPlugin {
         ChannelConstants.parameterNameEventId: eventId,
         ChannelConstants.parameterNameEventStartDate: startDate,
         ChannelConstants.parameterNameEventEndDate: endDate,
-        ChannelConstants.parameterNameFollowingInstances:
-            deleteFollowingInstances,
+        ChannelConstants.parameterNameFollowingInstances: deleteFollowingInstances,
       },
     );
   }
@@ -195,39 +185,35 @@ class DeviceCalendarPlugin {
   /// it should create or update the event.
   ///
   /// Returns a [Result] with the newly created or updated [Event.eventId]
-  Future<Result<String>> createOrUpdateEvent(Event event) async {
+  Future<Result<String>> createOrUpdateEvent(Event event, int span) async {
     return _invokeChannelMethod(
       ChannelConstants.methodNameCreateOrUpdateEvent,
       assertParameters: (result) {
         // Setting time to 0 for all day events
         if (event.allDay == true) {
-          event.start = DateTime(
-              event.start.year, event.start.month, event.start.day, 0, 0, 0);
-          event.end =
-              DateTime(event.end.year, event.end.month, event.end.day, 0, 0, 0);
+          event.start = DateTime(event.start.year, event.start.month, event.start.day, 0, 0, 0);
+          event.end = DateTime(event.end.year, event.end.month, event.end.day, 0, 0, 0);
         }
 
         _assertParameter(
           result,
-          !(event.allDay == true && (event?.calendarId?.isEmpty ?? true) ||
-              event.start == null ||
-              event.end == null),
+          !(event.allDay == true && (event?.calendarId?.isEmpty ?? true) || event.start == null || event.end == null),
           ErrorCodes.invalidArguments,
           ErrorMessages.createOrUpdateEventInvalidArgumentsMessageAllDay,
         );
 
         _assertParameter(
           result,
-          !(event.allDay != true &&
-              ((event?.calendarId?.isEmpty ?? true) ||
-                  event.start == null ||
-                  event.end == null ||
-                  event.start.isAfter(event.end))),
+          !(event.allDay != true && ((event?.calendarId?.isEmpty ?? true) || event.start == null || event.end == null || event.start.isAfter(event.end))),
           ErrorCodes.invalidArguments,
           ErrorMessages.createOrUpdateEventInvalidArgumentsMessage,
         );
       },
-      arguments: () => event.toJson(),
+      arguments: () {
+        final arguments = event.toJson();
+        arguments['span'] = span;
+        return arguments;
+      },
     );
   }
 
@@ -262,12 +248,8 @@ class DeviceCalendarPlugin {
       },
       arguments: () => <String, Object>{
         ChannelConstants.parameterNameCalendarName: calendarName,
-        ChannelConstants.parameterNameCalendarColor:
-            '0x${calendarColor.value.toRadixString(16)}',
-        ChannelConstants.parameterNameLocalAccountName:
-            localAccountName?.isEmpty ?? true
-                ? 'Device Calendar'
-                : localAccountName
+        ChannelConstants.parameterNameCalendarColor: '0x${calendarColor.value.toRadixString(16)}',
+        ChannelConstants.parameterNameLocalAccountName: localAccountName?.isEmpty ?? true ? 'Device Calendar' : localAccountName
       },
     );
   }
@@ -305,8 +287,7 @@ class DeviceCalendarPlugin {
     return result;
   }
 
-  void _parsePlatformExceptionAndUpdateResult<T>(
-      Exception exception, Result<T> result) {
+  void _parsePlatformExceptionAndUpdateResult<T>(Exception exception, Result<T> result) {
     if (exception == null) {
       result.errors.add(
         ResultError(
@@ -323,16 +304,14 @@ class DeviceCalendarPlugin {
       result.errors.add(
         ResultError(
           ErrorCodes.platformSpecific,
-          sprintf(ErrorMessages.unknownDeviceExceptionTemplate,
-              [exception.code, exception.message]),
+          sprintf(ErrorMessages.unknownDeviceExceptionTemplate, [exception.code, exception.message]),
         ),
       );
     } else {
       result.errors.add(
         ResultError(
           ErrorCodes.generic,
-          sprintf(ErrorMessages.unknownDeviceGenericExceptionTemplate,
-              [exception.toString()]),
+          sprintf(ErrorMessages.unknownDeviceGenericExceptionTemplate, [exception.toString()]),
         ),
       );
     }
