@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:device_calendar/device_calendar.dart';
 import 'package:device_calendar_example/presentation/pages/calendar_add.dart';
 import 'package:flutter/services.dart';
@@ -17,11 +19,10 @@ class CalendarsPage extends StatefulWidget {
 class _CalendarsPageState extends State<CalendarsPage> {
   DeviceCalendarPlugin _deviceCalendarPlugin;
   List<Calendar> _calendars;
-  List<Calendar> get _writableCalendars =>
-      _calendars?.where((c) => !c.isReadOnly)?.toList() ?? <Calendar>[];
 
-  List<Calendar> get _readOnlyCalendars =>
-      _calendars?.where((c) => c.isReadOnly)?.toList() ?? <Calendar>[];
+  List<Calendar> get _writableCalendars => _calendars?.where((c) => !c.isReadOnly)?.toList() ?? <Calendar>[];
+
+  List<Calendar> get _readOnlyCalendars => _calendars?.where((c) => c.isReadOnly)?.toList() ?? <Calendar>[];
 
   _CalendarsPageState() {
     _deviceCalendarPlugin = DeviceCalendarPlugin();
@@ -31,6 +32,49 @@ class _CalendarsPageState extends State<CalendarsPage> {
   void initState() {
     super.initState();
     _retrieveCalendars();
+    // var event = Event.fromJson({
+    //   "calendarId": "86227752-A7FA-41AF-8DAB-0E56463AB3A0",
+    //   "title": "New重复123",
+    //   "start": 1612170000000,
+    //   "end": 1612173600000,
+    //   "startTimeZone": "Asia/Shanghai",
+    //   "allDay": false,
+    //   "location": "",
+    //   "availability": "BUSY",
+    //   //"attendees": [],
+    //   "recurrenceRule": {"interval": 1, "endDate": 1612778400000, "recurrenceFrequency": 0},
+    //   // "reminders": []
+    // });
+    // _deviceCalendarPlugin.createOrUpdateEvent(event).then((value) => print(value.data));
+
+//1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C
+
+    var event = Event.fromJson({
+      "calendarId": "86227752-A7FA-41AF-8DAB-0E56463AB3A0",
+      //"eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C/RID=634035600",
+      "eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C",
+      "title": "重复123-修改111111222",
+      "start": 1612177200000,
+      "end": 1612260000000,
+      "startTimeZone": "Asia/Shanghai",
+      "allDay": false,
+      "availability": "BUSY",
+    });
+    _deviceCalendarPlugin.createOrUpdateEvent(event, 1).then((value) {
+      print(value.data);
+
+      if (value.hasErrors) {
+        print(value.errors.length);
+        print(value.errors[0].errorMessage);
+        print(value.errors[1].errorMessage);
+      }
+
+      final startDate = DateTime.now().add(Duration(days: -30));
+      final endDate = DateTime.now().add(Duration(days: 30));
+      _deviceCalendarPlugin.retrieveEvents("86227752-A7FA-41AF-8DAB-0E56463AB3A0", RetrieveEventsParams(startDate: startDate, endDate: endDate)).then((value) {
+        print(jsonEncode(value.data));
+      });
+    });
   }
 
   @override
@@ -54,14 +98,10 @@ class _CalendarsPageState extends State<CalendarsPage> {
               itemCount: _calendars?.length ?? 0,
               itemBuilder: (BuildContext context, int index) {
                 return GestureDetector(
-                  key: Key(_calendars[index].isReadOnly
-                      ? 'readOnlyCalendar${_readOnlyCalendars.indexWhere((c) => c.id == _calendars[index].id)}'
-                      : 'writableCalendar${_writableCalendars.indexWhere((c) => c.id == _calendars[index].id)}'),
+                  key: Key(_calendars[index].isReadOnly ? 'readOnlyCalendar${_readOnlyCalendars.indexWhere((c) => c.id == _calendars[index].id)}' : 'writableCalendar${_writableCalendars.indexWhere((c) => c.id == _calendars[index].id)}'),
                   onTap: () async {
-                    await Navigator.push(context,
-                        MaterialPageRoute(builder: (BuildContext context) {
-                      return CalendarEventsPage(_calendars[index],
-                          key: Key('calendarEventsPage'));
+                    await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+                      return CalendarEventsPage(_calendars[index], key: Key('calendarEventsPage'));
                     }));
                   },
                   child: Padding(
@@ -78,21 +118,16 @@ class _CalendarsPageState extends State<CalendarsPage> {
                         Container(
                           width: 15,
                           height: 15,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(_calendars[index].color)),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: Color(_calendars[index].color)),
                         ),
                         SizedBox(width: 10),
                         Container(
                           margin: const EdgeInsets.fromLTRB(0, 0, 5.0, 0),
                           padding: const EdgeInsets.all(3.0),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.blueAccent)),
+                          decoration: BoxDecoration(border: Border.all(color: Colors.blueAccent)),
                           child: Text('Default'),
                         ),
-                        Icon(_calendars[index].isReadOnly
-                            ? Icons.lock
-                            : Icons.lock_open)
+                        Icon(_calendars[index].isReadOnly ? Icons.lock : Icons.lock_open)
                       ],
                     ),
                   ),
@@ -104,8 +139,7 @@ class _CalendarsPageState extends State<CalendarsPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final createCalendar = await Navigator.push(context,
-              MaterialPageRoute(builder: (BuildContext context) {
+          final createCalendar = await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
             return CalendarAddPage();
           }));
 
@@ -132,6 +166,8 @@ class _CalendarsPageState extends State<CalendarsPage> {
       setState(() {
         _calendars = calendarsResult?.data;
       });
+
+      print(jsonEncode(_calendars));
     } on PlatformException catch (e) {
       print(e);
     }

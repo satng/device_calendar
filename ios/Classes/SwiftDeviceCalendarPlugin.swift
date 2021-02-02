@@ -583,6 +583,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             let description = arguments[self.eventDescriptionArgument] as? String
             let location = arguments[self.eventLocationArgument] as? String
             let url = arguments[self.eventURLArgument] as? String
+            let span = arguments["span"] as? Int
             let ekCalendar = self.eventStore.calendar(withIdentifier: calendarId)
             if (ekCalendar == nil) {
                 self.finishWithCalendarNotFoundError(result: result, calendarId: calendarId)
@@ -637,7 +638,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             }
             
             do {
-                try self.eventStore.save(ekEvent!, span: .futureEvents)
+                try self.eventStore.save(ekEvent!, span: span == 1 ? EKSpan.futureEvents : EKSpan.thisEvent)
                 result(ekEvent!.eventIdentifier)
             } catch {
                 self.eventStore.reset()
