@@ -12,6 +12,7 @@ extension EKParticipant {
     }
 }
 
+@available(iOS 9.0, *)
 public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
     struct Calendar: Codable {
         let id: String
@@ -277,7 +278,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             self.encodeJsonAndFinish(codable: events, result: result)
         }, result: result)
     }
-    
+
     private func createEventFromEkEvent(calendarId: String, ekEvent: EKEvent) -> Event {
         var attendees = [Attendee]()
         if ekEvent.attendees != nil {
@@ -599,10 +600,26 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin {
             if eventId == nil {
                 ekEvent = EKEvent.init(eventStore: self.eventStore)
             } else {
-                ekEvent = self.eventStore.event(withIdentifier: eventId!)
-                if(ekEvent == nil) {
-                    self.finishWithEventNotFoundError(result: result, eventId: eventId!)
-                    return
+                
+                if(span == 3){
+                    
+                    let predicate = self.eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [ekCalendar!])
+                    let ekEvents = self.eventStore.events(matching: predicate) as [EKEvent]
+                    let events = ekEvents.filter({ (e) -> Bool in
+                       return eventId == e.eventIdentifier
+                    })
+                    if(events.count == 0){
+                        self.finishWithEventNotFoundError(result: result, eventId: eventId!)
+                        return;
+                    }
+                    ekEvent = events[0]
+                    ekEvent?.recurrenceRules = nil
+                }else{
+                    ekEvent = self.eventStore.event(withIdentifier: eventId!)
+                    if(ekEvent == nil) {
+                        self.finishWithEventNotFoundError(result: result, eventId: eventId!)
+                        return
+                    }
                 }
             }
             

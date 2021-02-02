@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
@@ -47,13 +48,7 @@ class _CalendarEventsPageState extends State<CalendarEventsPage> {
                   ListView.builder(
                     itemCount: _calendarEvents?.length ?? 0,
                     itemBuilder: (BuildContext context, int index) {
-                      return EventItem(
-                          _calendarEvents[index],
-                          _deviceCalendarPlugin,
-                          _onLoading,
-                          _onDeletedFinished,
-                          _onTapped,
-                          _calendar.isReadOnly);
+                      return EventItem(_calendarEvents[index], _deviceCalendarPlugin, _onLoading, _onDeletedFinished, _onTapped, _calendar.isReadOnly);
                     },
                   ),
                   if (_isLoading)
@@ -71,8 +66,7 @@ class _CalendarEventsPageState extends State<CalendarEventsPage> {
       return FloatingActionButton(
         key: Key('addEventButton'),
         onPressed: () async {
-          final refreshEvents = await Navigator.push(context,
-              MaterialPageRoute(builder: (BuildContext context) {
+          final refreshEvents = await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
             return CalendarEventPage(_calendar);
           }));
           if (refreshEvents == true) {
@@ -108,8 +102,7 @@ class _CalendarEventsPageState extends State<CalendarEventsPage> {
   }
 
   Future _onTapped(Event event) async {
-    final refreshEvents = await Navigator.push(context,
-        MaterialPageRoute(builder: (BuildContext context) {
+    final refreshEvents = await Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
       return CalendarEventPage(
         _calendar,
         event,
@@ -129,12 +122,29 @@ class _CalendarEventsPageState extends State<CalendarEventsPage> {
   Future _retrieveCalendarEvents() async {
     final startDate = DateTime.now().add(Duration(days: -30));
     final endDate = DateTime.now().add(Duration(days: 30));
-    var calendarEventsResult = await _deviceCalendarPlugin.retrieveEvents(
-        _calendar.id,
-        RetrieveEventsParams(startDate: startDate, endDate: endDate));
+    var calendarEventsResult = await _deviceCalendarPlugin.retrieveEvents(_calendar.id, RetrieveEventsParams(startDate: startDate, endDate: endDate, eventIds: ["1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:93B495CB-3FD0-4650-9CA9-8CF8725F3377"]));
     setState(() {
       _calendarEvents = calendarEventsResult?.data;
       _isLoading = false;
     });
+    if (_calendar.name == "Miya") {
+      var event = Event.fromJson({
+        "calendarId": _calendar.id,
+        "eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:93B495CB-3FD0-4650-9CA9-8CF8725F3377",
+        "title": "New重复123-倒数2个",
+        "start": 1612688400000,
+        "end": 1612692000000,
+        "startTimeZone": "Asia/Shanghai",
+        "allDay": false,
+        "location": "",
+        "availability": "BUSY",
+        //"attendees": [],
+        //"recurrenceRule": {"interval": 1, "endDate": 1612778400000, "recurrenceFrequency": 0},
+        // "reminders": []
+      });
+      await _deviceCalendarPlugin.createOrUpdateEvent(event, 3).then((value) => print(value.data));
+    }
+
+    print(jsonEncode(_calendarEvents));
   }
 }

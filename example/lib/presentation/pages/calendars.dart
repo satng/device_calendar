@@ -33,7 +33,7 @@ class _CalendarsPageState extends State<CalendarsPage> {
     super.initState();
     _retrieveCalendars();
     // var event = Event.fromJson({
-    //   "calendarId": "86227752-A7FA-41AF-8DAB-0E56463AB3A0",
+    //   "calendarId": "7917ACDB-5DD5-44BA-A9D6-EEF745535926",
     //   "title": "New重复123",
     //   "start": 1612170000000,
     //   "end": 1612173600000,
@@ -45,36 +45,36 @@ class _CalendarsPageState extends State<CalendarsPage> {
     //   "recurrenceRule": {"interval": 1, "endDate": 1612778400000, "recurrenceFrequency": 0},
     //   // "reminders": []
     // });
-    // _deviceCalendarPlugin.createOrUpdateEvent(event).then((value) => print(value.data));
+    // _deviceCalendarPlugin.createOrUpdateEvent(event, 0).then((value) => print(value.data));
 
-//1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C
+//1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:2E410D22-67A0-4B9F-8FC9-F8328473A248
 
-    var event = Event.fromJson({
-      "calendarId": "86227752-A7FA-41AF-8DAB-0E56463AB3A0",
-      //"eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C/RID=634035600",
-      "eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C",
-      "title": "重复123-修改111111222",
-      "start": 1612177200000,
-      "end": 1612260000000,
-      "startTimeZone": "Asia/Shanghai",
-      "allDay": false,
-      "availability": "BUSY",
-    });
-    _deviceCalendarPlugin.createOrUpdateEvent(event, 1).then((value) {
-      print(value.data);
-
-      if (value.hasErrors) {
-        print(value.errors.length);
-        print(value.errors[0].errorMessage);
-        print(value.errors[1].errorMessage);
-      }
-
-      final startDate = DateTime.now().add(Duration(days: -30));
-      final endDate = DateTime.now().add(Duration(days: 30));
-      _deviceCalendarPlugin.retrieveEvents("86227752-A7FA-41AF-8DAB-0E56463AB3A0", RetrieveEventsParams(startDate: startDate, endDate: endDate)).then((value) {
-        print(jsonEncode(value.data));
-      });
-    });
+    // var event = Event.fromJson({
+    //   "calendarId": "7917ACDB-5DD5-44BA-A9D6-EEF745535926",
+    //   //"eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:96AE854D-B3A9-4B83-B415-062754D38B2C/RID=634035600",
+    //   "eventId": "1FB220D2-4F8B-4314-9E19-1EC7407BCA3A:2E410D22-67A0-4B9F-8FC9-F8328473A248",
+    //   "title": "重复123-修改111111222",
+    //   "start": 1612177200000,
+    //   "end": 1612260000000,
+    //   "startTimeZone": "Asia/Shanghai",
+    //   "allDay": false,
+    //   "availability": "BUSY",
+    // });
+    // _deviceCalendarPlugin.createOrUpdateEvent(event, 0).then((value) {
+    //   print(value.data);
+    //
+    //   if (value.hasErrors) {
+    //     print(value.errors.length);
+    //     print(value.errors[0].errorMessage);
+    //     print(value.errors[1].errorMessage);
+    //   }
+    //
+    //   final startDate = DateTime.now().add(Duration(days: -30));
+    //   final endDate = DateTime.now().add(Duration(days: 30));
+    //   _deviceCalendarPlugin.retrieveEvents("7917ACDB-5DD5-44BA-A9D6-EEF745535926", RetrieveEventsParams(startDate: startDate, endDate: endDate)).then((value) {
+    //     print(jsonEncode(value.data));
+    //   });
+    // });
   }
 
   @override
